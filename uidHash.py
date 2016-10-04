@@ -12,11 +12,9 @@ doc="""
 input file contains the user ids to be hashed. User ID takes form 'name@domain'
 Outputfile will include everthing in the input file but uids will have been securely hashed
 """
-
 	
 config = ConfigParser.RawConfigParser()
 config.read('uidHash.cfg')
-
 UNAMESALT = config.get('Auth', 'salt')
 
 def getUIDStartPos(logLine):
@@ -40,6 +38,13 @@ def verify_password(uid, hashed_uid, salt):
     re_hashed, salt = hash_uid(uid, salt)
     return re_hashed == hashed_uid
 
+def getSession(lLogLine):
+    return lLogLine.split(' ')[0]
+
+def getIPSubnet(lLogLine):
+    match = re.search('([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})', lLogLine)
+    return match.group()
+
 
 if __name__ == '__main__':
     uidFile=sys.argv[1] 
@@ -55,9 +60,11 @@ if __name__ == '__main__':
                 campus = getCampus(uid)
                 uidPos = uidInfo[1]
                 preamble = line[0:uidPos[0]].strip('"')
-                remainder = line[uidPos[1]:].strip().split('\t')[1].strip('"')
-                print ("preamble: {}\nuid:{}\nhuid:{}\ncampus:{}\nremainder: {}").format(preamble, uid,huid, campus, remainder)
-                csvf.writerow([huid,campus,remainder])
+                remainder = line[uidPos[1]:].strip().split('\t')[1].strip('"')#for WMS report
+                #remainder = line[uidPos[1]:].strip()#for ezp
+                #print ("preamble: {}\nuid:{}\nhuid:{}\ncampus:{}\nremainder: {}").format(preamble, uid,huid, campus, remainder)
+                #csvf.writerow([huid,campus,preamble,getSession(remainder), getIPSubnet(remainder)])#for ezp report data
+                csvf.writerow([huid,campus,remainder])#for WMS
             except TypeError:
                 print "Error value: {}".format(line)
         #find the end of the uid (per line)
