@@ -20,6 +20,9 @@ config.read('uidHash.cfg')
 UNAMESALT = config.get('Auth', 'salt')
 
 def getUIDStartPos(logLine):
+    doc="""
+    return the uid and its start and end positions 
+    """
     match = re.search(r'[\w.-]+@[\w.-]+', logLine)
     if match:
         return match.group(), match.span()
